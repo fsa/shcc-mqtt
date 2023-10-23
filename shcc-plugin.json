@@ -1,0 +1,14 @@
+{
+    "name": "MQTT",
+    "namespace": "FSA\\MQTT\\",
+    "description": "Обеспечивает взаимодействие с MQTT брокером.",
+    "daemon": "FSA\\MQTT\\Daemon",
+    "settings": {
+        "server_ip": "127.0.0.1",
+        "port": 1883,
+        "client_id": "shcc-host",
+        "username": "shcc",
+        "password": "password",
+        "topics": []
+    }
+}

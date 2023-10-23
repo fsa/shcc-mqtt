@@ -1,0 +1,24 @@
+{
+    "name": "fsa/shcc-mqtt",
+    "description": "Плагин SHCC. Обеспечивает взаимодействие с MQTT брокером.",
+    "keywords": [
+        "shcc"
+    ],
+    "type": "library",
+    "authors": [
+        {
+            "name": "Sergei Fedotov",
+            "email": "fsa@tavda.info"
+        }
+    ],
+    "license": "GPL-3.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "FSA\\MQTT\\": "src/"
+        }
+    },
+    "require": {
+        "fsa/shcc-framework": "*",
+        "php-mqtt/client": "^1.8"
+    }
+}
