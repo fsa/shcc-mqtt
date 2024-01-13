@@ -1,8 +1,8 @@
 {
     "name": "fsa/shcc-mqtt",
-    "description": "Плагин SHCC. Обеспечивает взаимодействие с MQTT брокером.",
+    "description": "Плагин SHCC для взаимодействия с MQTT брокером",
     "keywords": [
-        "shcc"
+        "shcc-plugin"
     ],
     "type": "library",
     "authors": [
@@ -14,11 +14,11 @@
     "license": "GPL-3.0-or-later",
     "autoload": {
         "psr-4": {
-            "FSA\\MQTT\\": "src/"
+            "ShccPlugin\\Mqtt\\": "src/"
         }
     },
     "require": {
-        "fsa/shcc-framework": "*",
-        "php-mqtt/client": "^1.8"
+        "php-mqtt/client": "^1.8",
+        "fsa/shcc-framework": "dev-local"
     }
 }

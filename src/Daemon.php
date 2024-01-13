@@ -1,68 +1,59 @@
 <?php
+namespace ShccPlugin\Mqtt;
 
-namespace FSA\MQTT;
-
-use FSA\SmartHome\DaemonInterface;
+use ShccFramework\DaemonEvent;
+use ShccFramework\DaemonInterface;
 use PhpMqtt\Client\MqttClient;
 
 class Daemon implements DaemonInterface
 {
     const DAEMON_NAME = 'MQTT';
 
-    private $events_callback;
-    private $server;
-    private $port;
-    private $client_id;
-    private $mqtt;
-    private $username;
-    private $password;
-    private $topics;
+    private MqttClient $mqtt;
+    private string $server = '127.0.0.1';
+    private int $port = 1883;
+    private string $client_id = 'shcc-host';
+    private string $username = 'shcc';
+    private string $password = 'password';
+    private array $topics = [];
 
-    public function __construct($events, $params)
-    {
-        $this->events_callback = $events;
-        $this->server = $params['server_ip'];
-        $this->port = $params['port'];
-        $this->client_id = $params['client_id'];
-        $this->username = $params['username'];
-        $this->password = $params['password'];
-        $this->topics = $params['topics'];
+    public function __construct(
+        private DaemonEvent $daemonEvent
+    ) {
     }
 
-    public function getName()
+    public function getName(): string
     {
         return self::DAEMON_NAME;
     }
 
-    public function prepare()
+    public function prepare(array $params): void
     {
+        foreach(['server'=>'server_addr', 'port'=>'port', 'client_id'=>'client_id', 'username'=>'username', 'password'=>'password', 'topics'=>'topics'] as $property=>$param) {
+            if(isset($params[$param])) {
+                $this->$property = $params[$param];
+            }
+        }
         $this->mqtt = new MqttClient($this->server, $this->port, $this->client_id);
         $connectionSettings = (new \PhpMqtt\Client\ConnectionSettings)
             ->setUsername($this->username)
             ->setPassword($this->password);
         $this->mqtt->connect($connectionSettings, true);
         $closure = function ($topic, $message, $retained, $matchedWildcards) {
-            $topic_explode = explode('/', $topic, 3);
-            if (count($topic_explode)==3) {
-                $callback = $this->events_callback;
-                $callback($topic_explode[0].'/'.$topic_explode[1], [$topic_explode[2]=>$message]);
-                syslog(LOG_DEBUG, sprintf("Event [%s => %s]: %s\n", $topic_explode[0].'/'.$topic_explode[1], $topic_explode[2], $message));
-            } else {
-                syslog(LOG_DEBUG, sprintf("Received message on topic [%s]: %s\n", $topic, $message));
-            }
+            $this->daemonEvent->postMessage(self::DAEMON_NAME, [$topic => $message]);
         };
         foreach ($this->topics as $subscribe) {
-            syslog(LOG_DEBUG, $subscribe);
             $this->mqtt->subscribe($subscribe, $closure, 0);
         }
     }
 
-    public function iteration()
+    public function iteration(): ?string
     {
         $this->mqtt->loop(true);
+        return null;
     }
 
-    public function finish()
+    public function finish(): void
     {
         $this->mqtt->disconnect();
     }
