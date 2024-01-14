@@ -1,9 +1,10 @@
 <?php
 namespace ShccPlugin\Mqtt;
 
+use PhpMqtt\Client\ConnectionSettings;
+use PhpMqtt\Client\MqttClient;
 use ShccFramework\DaemonEvent;
 use ShccFramework\DaemonInterface;
-use PhpMqtt\Client\MqttClient;
 
 class Daemon implements DaemonInterface
 {
@@ -35,12 +36,13 @@ class Daemon implements DaemonInterface
             }
         }
         $this->mqtt = new MqttClient($this->server, $this->port, $this->client_id);
-        $connectionSettings = (new \PhpMqtt\Client\ConnectionSettings)
+        $connectionSettings = (new ConnectionSettings)
             ->setUsername($this->username)
             ->setPassword($this->password);
         $this->mqtt->connect($connectionSettings, true);
         $closure = function ($topic, $message, $retained, $matchedWildcards) {
             $this->daemonEvent->postMessage(self::DAEMON_NAME, [$topic => $message]);
+            echo sprintf("Message [%s]: %s", $topic, $message) . PHP_EOL;
         };
         foreach ($this->topics as $subscribe) {
             $this->mqtt->subscribe($subscribe, $closure, 0);
